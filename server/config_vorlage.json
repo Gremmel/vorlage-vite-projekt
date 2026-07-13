@@ -4,5 +4,19 @@
   },
   "JWT": {
     "secret": "eigener schlüsse"
+  },
+  "ui": {
+    "baseUrl": "https://example.org"
+  },
+  "security": {
+    "passwordResetExpiresMinutes": 60
+  },
+  "smtp": {
+    "host": "smtp.example.org",
+    "port": 587,
+    "secure": false,
+    "user": "smtp-user",
+    "pass": "smtp-password",
+    "from": "no-reply@example.org"
   }
 }

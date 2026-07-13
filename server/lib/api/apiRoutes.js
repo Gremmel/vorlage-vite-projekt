@@ -3,6 +3,7 @@ import authMiddleware from '../middleware/authMiddleware.js';
 import loginController from './loginController.js';
 import sessionController from './sessionController.js';
 import userController from './userController.js';
+import { buildPasswordResetUrl, sendPasswordResetMail } from './passwordResetMailer.js';
 
 const apiRoutes = {
   init (app, config) {
@@ -26,6 +27,57 @@ const apiRoutes = {
       } else {
         logger.error('Ungueltiger Benutzername oder Passwort', username);
         res.status(401).json({ message: 'Ungueltiger Benutzername oder Passwort' });
+      }
+    });
+
+    app.post('/api/requestPasswordReset', async (req, res) => {
+      try {
+        const expiresMinutes = Number(config?.security?.passwordResetExpiresMinutes || 60);
+        const resetRequest = await userController.createPasswordResetToken(req.body?.identifier, expiresMinutes);
+
+        if (resetRequest) {
+          const resetUrl = buildPasswordResetUrl(config, resetRequest.token);
+
+          if (resetUrl) {
+            await sendPasswordResetMail(config, resetRequest.email, resetUrl, expiresMinutes);
+          }
+        }
+
+        res.json({
+          message: 'Falls ein passender Benutzer existiert, wurde eine E-Mail zum Zuruecksetzen versendet.'
+        });
+      } catch (error) {
+        logger.error('/api/requestPasswordReset', error);
+        res.status(500).json({ message: 'Fehler beim Erstellen des Reset-Links.' });
+      }
+    });
+
+    app.post('/api/confirmPasswordReset', async (req, res) => {
+      try {
+        const { token, password } = req.body;
+
+        if (!token || !password) {
+          res.status(400).json({ message: 'Token und Passwort sind erforderlich.' });
+
+          return;
+        }
+
+        if (String(password).length < 8) {
+          res.status(400).json({ message: 'Das Passwort muss mindestens 8 Zeichen lang sein.' });
+
+          return;
+        }
+
+        const result = await userController.resetPasswordByToken(token, password);
+
+        if (result) {
+          res.json({ result: true, message: 'Passwort wurde erfolgreich geaendert.' });
+        } else {
+          res.status(400).json({ message: 'Token ungueltig oder abgelaufen.' });
+        }
+      } catch (error) {
+        logger.error('/api/confirmPasswordReset', error);
+        res.status(500).json({ message: 'Fehler beim Zuruecksetzen des Passworts.' });
       }
     });
 

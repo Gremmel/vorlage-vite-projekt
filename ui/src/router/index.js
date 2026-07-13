@@ -8,6 +8,8 @@ import { useUserStore } from "@/stores/userStore";
 import ChangePassword from "@/views/ChangePassword.vue";
 import Impressum from "@/views/Impressum.vue";
 import DSGVO from "@/views/DSGVO.vue";
+import ForgotPasswordView from "@/views/ForgotPasswordView.vue";
+import ResetPasswordView from "@/views/ResetPasswordView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -56,6 +58,16 @@ const router = createRouter({
       path: "/login",
       name: "login",
       component: LoginView,
+    },
+    {
+      path: "/forgotPassword",
+      name: "forgotPassword",
+      component: ForgotPasswordView,
+    },
+    {
+      path: "/resetPassword",
+      name: "resetPassword",
+      component: ResetPasswordView,
     },
     {
       path: "/impressum",

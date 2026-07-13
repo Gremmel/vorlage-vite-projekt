@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import expressApp from './lib/express.js'; // Express importieren
 import { fileURLToPath } from 'url';
 import logger from './lib/logger.js'; // Logger importieren

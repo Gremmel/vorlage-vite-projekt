@@ -19,6 +19,9 @@
           <label for="floatingPassword">Passwort</label>
         </div>
         <button class="btn btn-success mt-2" type="button" @click="handleLogin">Login</button>
+        <div class="mt-3 text-end">
+          <RouterLink to="/forgotPassword">Passwort vergessen?</RouterLink>
+        </div>
       </div>
 
       <p v-if="errorMessage" class="error m-3">{{ errorMessage }}</p>

@@ -9,9 +9,41 @@ Enthalten:
 - Benutzerliste (Admin)
 - Benutzer anlegen, bearbeiten, loeschen (Admin)
 - Passwort aendern (Benutzer)
+- Passwort vergessen per E-Mail (Reset-Token)
 
-Nicht enthalten:
-- Eventverwaltung
-- Statistik
-- Register-/Vereinslogik
-- Socket.IO
+## Produktive Konfiguration Passwort vergessen
+
+Fuer den produktiven Einsatz muessen in extern/config.json folgende Bereiche gesetzt werden
+(siehe auch server/config_vorlage.json):
+
+- ui.baseUrl: Oeffentliche URL deiner UI, z. B. https://example.org
+- security.passwordResetExpiresMinutes: Gueltigkeit des Reset-Links in Minuten
+- smtp.host
+- smtp.port
+- smtp.secure
+- smtp.user
+- smtp.pass
+- smtp.from
+
+Der Reset-Link wird in der API nicht zurueckgegeben, sondern direkt per SMTP versendet.
+
+## Secrets in Umgebungsvariablen
+
+Fuer produktive Nutzung sollten SMTP-Zugangsdaten nicht im Klartext in extern/config.json liegen.
+Das Backend unterstuetzt daher Umgebungsvariablen, die die Werte aus der JSON-Datei ueberschreiben:
+
+- UI_BASE_URL
+- SMTP_HOST
+- SMTP_PORT
+- SMTP_SECURE
+- SMTP_USER
+- SMTP_PASS
+- SMTP_FROM
+
+Beispielwerte stehen in server/.env.example.
+
+Vorgehen:
+- server/.env.example nach server/.env uebernehmen und Werte setzen.
+- smtp.pass in extern/config.json optional leer lassen.
+- Server neu starten.
+
