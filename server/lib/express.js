@@ -15,6 +15,18 @@ const dirname = path.dirname(filename);
 const defaultCorsOrigins = [ 'http://localhost:5173', 'http://192.168.201.42:5173' ];
 const defaultCorsMethods = [ 'GET', 'POST' ];
 
+function getCookieOptions (config) {
+  const cookieConfig = config?.security?.cookies || {};
+
+  return {
+    httpOnly: true,
+    secure: Boolean(cookieConfig.secure),
+    maxAge: 30 * 24 * 60 * 60 * 1000,
+    sameSite: cookieConfig.sameSite || 'strict',
+    path: '/'
+  };
+}
+
 function getCorsOrigins (config) {
   const origins = config?.cors?.origins;
 
@@ -54,6 +66,11 @@ const expressApp = {
 
   init (config) {
     authMiddleware.setSecret(config.JWT.secret);
+    authMiddleware.setCookieOptions(getCookieOptions(config));
+
+    if (config?.security?.trustProxy) {
+      this.app.set('trust proxy', 1);
+    }
 
     this.app.use(helmet({
       contentSecurityPolicy: false,
@@ -66,12 +83,6 @@ const expressApp = {
       methods: getCorsMethods(config),
       credentials: true // Wenn du Cookies oder Anmeldeinformationen sendest
     }));
-
-    // 1 steht für "einen Proxy" wie Nginx
-    // Dies teilt Express mit, dass es den X-Forwarded-*-Headern, die vom Proxy gesendet werden
-    // (wie X-Forwarded-Proto für das Protokoll), vertrauen soll. Dadurch wird Express bewusst,
-    // dass die ursprüngliche Verbindung tatsächlich über HTTPS war, und es erlaubt das Setzen von Cookies mit dem secure-Flag.
-    // this.app.set('trust proxy', 1);
 
     // Middleware zum Parsen von Cookies
     this.app.use(express.json());

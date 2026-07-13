@@ -39,9 +39,22 @@ function createLimiter (config, sectionName, defaults) {
   });
 }
 
+function getCookieOptions (config) {
+  const cookieConfig = config?.security?.cookies || {};
+
+  return {
+    httpOnly: true,
+    secure: Boolean(cookieConfig.secure),
+    maxAge: 30 * 24 * 60 * 60 * 1000,
+    sameSite: cookieConfig.sameSite || 'strict',
+    path: '/'
+  };
+}
+
 const apiRoutes = {
   init (app, config) {
     sessionController.init(config);
+    const cookieOptions = getCookieOptions(config);
 
     app.use('/api', (req, _res, next) => {
       ensureRequestId(req);
@@ -67,12 +80,7 @@ const apiRoutes = {
       if (user) {
         const token = sessionController.addSession(user);
 
-        res.cookie('session_token', token, {
-          httpOnly: true,
-          secure: true,
-          maxAge: 30 * 24 * 60 * 60 * 1000,
-          sameSite: 'strict'
-        });
+        res.cookie('session_token', token, cookieOptions);
 
         sendOk(req, res, { user });
       } else {
@@ -124,14 +132,14 @@ const apiRoutes = {
 
       sessionController.removeSession(token);
 
-      res.clearCookie('session_token', {
-        httpOnly: true,
-        secure: false,
-        sameSite: 'strict'
-      });
+      res.clearCookie('session_token', cookieOptions);
 
       sendOk(req, res, { message: 'Erfolgreich abgemeldet' });
     });
+
+    app.get('/api/healthz', (req, res) => sendOk(req, res, { status: 'ok', service: 'server' }));
+
+    app.get('/api/readyz', (req, res) => sendOk(req, res, { status: 'ready', service: 'server' }));
 
     app.get('/api/getSession', (req, res) => {
       const token = req.cookies.session_token;
@@ -207,6 +215,11 @@ const apiRoutes = {
       } else {
         throw createApiError(401, 'USER_DELETE_FAILED', 'Fehler beim Loeschen des Users');
       }
+    }));
+
+    app.use('/api', (req, res) => sendError(req, res, 404, 'SYS_ROUTE_NOT_FOUND', 'API Route nicht gefunden.', {
+      path: req.path,
+      method: req.method
     }));
 
     // eslint-disable-next-line no-unused-vars

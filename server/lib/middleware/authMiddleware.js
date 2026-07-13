@@ -7,10 +7,24 @@ import jwt from 'jsonwebtoken';
 class AuthMiddleware {
   constructor () {
     this.secret = null;
+    this.cookieOptions = {
+      httpOnly: true,
+      secure: false,
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+      sameSite: 'strict',
+      path: '/'
+    };
   }
 
   setSecret (secret) {
     this.secret = secret;
+  }
+
+  setCookieOptions (cookieOptions) {
+    this.cookieOptions = {
+      ...this.cookieOptions,
+      ...cookieOptions
+    };
   }
 
   // Dummy-Funktion zur Überprüfung des Tokens (Anpassbar)
@@ -46,13 +60,7 @@ class AuthMiddleware {
           const newToken = sessionController.extendToken(token);
 
           // cookie neu mit verlängertem token neu setzen
-          res.cookie('session_token', newToken, {
-            httpOnly: true, // Cookie nicht durch JavaScript im Browser zugreifbar
-            secure: true, // true = wenn HTTPS
-            // Cookie-Lebensdauer (z.B. 1 Monat)
-            maxAge: 30 * 24 * 60 * 60 * 1000, // 1 Monat in Millisekunden
-            sameSite: 'strict' // Schützt vor CSRF-Angriffen
-          });
+          res.cookie('session_token', newToken, this.cookieOptions);
 
           // Wenn alles passt, rufe next() auf
           next();

@@ -92,6 +92,30 @@ function validateCors (errors, warnings, config) {
   }
 }
 
+function validateSecurityOptions (errors, config) {
+  const cookies = config?.security?.cookies;
+
+  if (!cookies) {
+    return;
+  }
+
+  if (cookies.secure !== undefined && typeof cookies.secure !== 'boolean') {
+    errors.push('security.cookies.secure muss boolean sein.');
+  }
+
+  if (cookies.sameSite !== undefined) {
+    const sameSite = String(cookies.sameSite || '').trim().toLowerCase();
+
+    if (![ 'strict', 'lax', 'none' ].includes(sameSite)) {
+      errors.push('security.cookies.sameSite muss strict, lax oder none sein.');
+    }
+  }
+
+  if (config?.security?.trustProxy !== undefined && typeof config.security.trustProxy !== 'boolean') {
+    errors.push('security.trustProxy muss boolean sein.');
+  }
+}
+
 export default function validateConfig (config) {
   const errors = [];
   const warnings = [];
@@ -119,6 +143,7 @@ export default function validateConfig (config) {
   validateRateLimit(errors, 'login', config?.security?.rateLimit?.login);
   validateRateLimit(errors, 'passwordReset', config?.security?.rateLimit?.passwordReset);
   validateCors(errors, warnings, config);
+  validateSecurityOptions(errors, config);
 
   if (!hasText(config?.ui?.baseUrl)) {
     warnings.push('ui.baseUrl fehlt. Passwort-Reset-Links koennen dann nicht korrekt erzeugt werden.');

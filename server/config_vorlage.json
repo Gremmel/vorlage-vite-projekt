@@ -19,6 +19,11 @@
   },
   "security": {
     "passwordResetExpiresMinutes": 60,
+    "trustProxy": false,
+    "cookies": {
+      "secure": false,
+      "sameSite": "strict"
+    },
     "rateLimit": {
       "login": {
         "windowMs": 900000,

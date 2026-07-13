@@ -68,6 +68,23 @@ CORS ist fuer neue Projekte ueber die Konfiguration steuerbar:
 
 Wenn cors nicht gesetzt ist, werden sichere Entwicklungs-Defaults genutzt.
 
+## Proxy und Cookie Konfiguration
+
+Fuer Deployments hinter Reverse Proxy (z. B. Nginx/Traefik) kann security.trustProxy aktiviert werden.
+
+- security.trustProxy: true/false
+- security.cookies.secure: true/false
+- security.cookies.sameSite: strict/lax/none
+
+Login, Token-Refresh und Logout verwenden dieselben Cookie-Optionen konsistent.
+
+## Betriebsendpunkte
+
+- GET /api/healthz: Liveness Check
+- GET /api/readyz: Readiness Check
+
+Nicht vorhandene /api Routen liefern einheitlich 404 im API-Fehlerformat.
+
 ## DB-Migrationen
 
 Die Datenbankstruktur wird jetzt versioniert ueber SQL-Migrationen verwaltet.
