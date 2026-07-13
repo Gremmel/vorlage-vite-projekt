@@ -1,5 +1,6 @@
 /* eslint-disable callback-return */
 import sessionController from '../api/sessionController.js';
+import { sendError } from '../api/apiResponse.js';
 import logger from '../logger.js';
 import jwt from 'jsonwebtoken';
 
@@ -38,7 +39,7 @@ class AuthMiddleware {
         if (decoded) {
           // Rolle des Benutzers überprüfen
           if (requiredRole && !decoded.user.roles.includes(requiredRole)) {
-            return res.status(403).json({ message: 'Zugriff verweigert: Unzureichende Berechtigungen' });
+            return sendError(req, res, 403, 'INSUFFICIENT_PERMISSIONS', 'Zugriff verweigert: Unzureichende Berechtigungen');
           }
 
           // token verlängern
@@ -56,17 +57,13 @@ class AuthMiddleware {
           // Wenn alles passt, rufe next() auf
           next();
         } else {
-          res.status(401).json({
-            message: 'session ist abgelaufen',
-            token: false
-          });
+          return sendError(req, res, 401, 'SESSION_EXPIRED', 'session ist abgelaufen', { token: false });
         }
       } else {
-        res.status(401).json({
-          message: 'keine session vorhanden',
-          token: false
-        });
+        return sendError(req, res, 401, 'NO_SESSION', 'keine session vorhanden', { token: false });
       }
+
+      return null;
     };
   }
 }

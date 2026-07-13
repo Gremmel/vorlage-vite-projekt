@@ -80,3 +80,21 @@ Die Datenbankstruktur wird jetzt versioniert ueber SQL-Migrationen verwaltet.
 Fuer Schema-Aenderungen neuer Projekte immer eine neue .sql Datei in diesem Ordner anlegen,
 statt bestehende Tabellen im Code implizit zu veraendern.
 
+## Einheitliches API-Error-Handling
+
+Fuer neue API-Endpunkte die zentralen Helper in server/lib/api/apiResponse.js verwenden:
+
+- sendOk(req, res, payload)
+- sendError(req, res, status, code, message, details)
+- createApiError(status, code, message, details)
+- asyncHandler(async (req, res) => { ... })
+
+Empfohlenes Muster in server/lib/api/apiRoutes.js:
+
+- Route mit asyncHandler umschliessen
+- Validierungsfehler mit createApiError werfen
+- Erfolgsantworten nur mit sendOk senden
+- Unerwartete Fehler laufen in die zentrale Error-Middleware
+
+Die Auth-Middleware nutzt ebenfalls sendError, damit auch 401/403 konsistent sind.
+
