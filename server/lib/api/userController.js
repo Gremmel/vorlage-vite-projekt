@@ -11,9 +11,9 @@ class UserController {
       let users;
 
       if (onlyEnabled) {
-        users = dbController.prepare('SELECT id, password, username, email, enabled, roles FROM fos_user WHERE enabled = ?').all('1');
+        users = dbController.prepare('SELECT id, password, username, email, enabled, roles FROM users WHERE enabled = ?').all('1');
       } else {
-        users = dbController.prepare('SELECT id, password, username, email, enabled, roles FROM fos_user').all();
+        users = dbController.prepare('SELECT id, password, username, email, enabled, roles FROM users').all();
       }
 
       // passwort hash entfernen
@@ -29,7 +29,7 @@ class UserController {
 
   getUserByName (username) {
     try {
-      const stmt = dbController.prepare('SELECT id, password, username, email, enabled, roles FROM fos_user WHERE username = ? COLLATE NOCASE');
+      const stmt = dbController.prepare('SELECT id, password, username, email, enabled, roles FROM users WHERE username = ? COLLATE NOCASE');
       const user = stmt.get(username);
 
       return user;
@@ -40,7 +40,7 @@ class UserController {
 
   getUserEnabled (user) {
     try {
-      const stmt = dbController.prepare('SELECT enabled FROM fos_user WHERE id = ?');
+      const stmt = dbController.prepare('SELECT enabled FROM users WHERE id = ?');
       const res = stmt.get(user.id);
 
       return res.enabled;
@@ -70,7 +70,7 @@ class UserController {
     logger.info('new hash', passHash);
 
     const stmt = dbController.prepare(`
-      INSERT INTO fos_user (username, email, password, roles, enabled)
+      INSERT INTO users (username, email, password, roles, enabled)
       VALUES (?, ?, ?, ?, ?)
     `);
 
@@ -97,7 +97,7 @@ class UserController {
     }
 
     const stmt = dbController.prepare(`
-      UPDATE fos_user
+      UPDATE users
       SET username = ?, email = ?, password = COALESCE(?, password), roles = ?, enabled = ?
       WHERE id = ?
     `);
@@ -130,7 +130,7 @@ class UserController {
     }
 
     const stmt = dbController.prepare(`
-      UPDATE fos_user
+      UPDATE users
       SET password = COALESCE(?, password)
       WHERE id = ?
     `);
@@ -160,7 +160,7 @@ class UserController {
     }
 
     // Verwende Platzhalter für eine sichere SQL-Abfrage
-    const stmt = dbController.prepare(`DELETE FROM fos_user WHERE id = ?`);
+    const stmt = dbController.prepare(`DELETE FROM users WHERE id = ?`);
 
     try {
       const result = stmt.run(id);
@@ -196,7 +196,7 @@ class UserController {
 
     const stmt = dbController.prepare(`
       SELECT id, username, email, enabled
-      FROM fos_user
+      FROM users
       WHERE LOWER(username) = LOWER(?) OR LOWER(COALESCE(email, '')) = LOWER(?)
       LIMIT 1
     `);
@@ -279,7 +279,7 @@ class UserController {
     }
 
     const passHash = await this.hashPassword(password);
-    const updateUser = dbController.prepare(`UPDATE fos_user SET password = ? WHERE id = ?`);
+    const updateUser = dbController.prepare(`UPDATE users SET password = ? WHERE id = ?`);
     const markUsed = dbController.prepare(`UPDATE password_reset_token SET used_at = ? WHERE id = ?`);
     const invalidateRest = dbController.prepare(`
       UPDATE password_reset_token
