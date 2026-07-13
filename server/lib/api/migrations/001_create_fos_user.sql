@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS fos_user (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  username TEXT NOT NULL UNIQUE,
+  email TEXT,
+  password TEXT NOT NULL,
+  roles TEXT NOT NULL DEFAULT '["benutzer"]',
+  enabled TEXT NOT NULL DEFAULT '1'
+);

@@ -68,3 +68,15 @@ CORS ist fuer neue Projekte ueber die Konfiguration steuerbar:
 
 Wenn cors nicht gesetzt ist, werden sichere Entwicklungs-Defaults genutzt.
 
+## DB-Migrationen
+
+Die Datenbankstruktur wird jetzt versioniert ueber SQL-Migrationen verwaltet.
+
+- Ort: server/lib/api/migrations
+- Reihenfolge: Dateinamen aufsteigend (z. B. 001_..., 002_...)
+- Ausfuehrung: automatisch beim Serverstart
+- Status: in der Tabelle schema_migrations
+
+Fuer Schema-Aenderungen neuer Projekte immer eine neue .sql Datei in diesem Ordner anlegen,
+statt bestehende Tabellen im Code implizit zu veraendern.
+
