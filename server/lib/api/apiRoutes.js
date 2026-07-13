@@ -34,7 +34,7 @@ function createLimiter (config, sectionName, defaults) {
     standardHeaders: true,
     legacyHeaders: false,
     handler (req, res) {
-      return sendError(req, res, 429, 'RATE_LIMITED', defaults.message);
+      return sendError(req, res, 429, 'RATE_TOO_MANY_REQUESTS', defaults.message);
     }
   });
 }
@@ -77,7 +77,7 @@ const apiRoutes = {
         sendOk(req, res, { user });
       } else {
         logger.error('Ungueltiger Benutzername oder Passwort', username);
-        throw createApiError(401, 'INVALID_CREDENTIALS', 'Ungueltiger Benutzername oder Passwort');
+        throw createApiError(401, 'AUTH_INVALID_CREDENTIALS', 'Ungueltiger Benutzername oder Passwort');
       }
     }));
 
@@ -102,11 +102,11 @@ const apiRoutes = {
       const { token, password } = req.body;
 
       if (!token || !password) {
-        throw createApiError(400, 'MISSING_FIELDS', 'Token und Passwort sind erforderlich.');
+        throw createApiError(400, 'RESET_MISSING_FIELDS', 'Token und Passwort sind erforderlich.');
       }
 
       if (String(password).length < 8) {
-        throw createApiError(400, 'PASSWORD_TOO_SHORT', 'Das Passwort muss mindestens 8 Zeichen lang sein.');
+        throw createApiError(400, 'RESET_PASSWORD_TOO_SHORT', 'Das Passwort muss mindestens 8 Zeichen lang sein.');
       }
 
       const result = await userController.resetPasswordByToken(token, password);
@@ -114,7 +114,7 @@ const apiRoutes = {
       if (result) {
         sendOk(req, res, { result: true, message: 'Passwort wurde erfolgreich geaendert.' });
       } else {
-        throw createApiError(400, 'INVALID_OR_EXPIRED_TOKEN', 'Token ungueltig oder abgelaufen.');
+        throw createApiError(400, 'RESET_INVALID_OR_EXPIRED_TOKEN', 'Token ungueltig oder abgelaufen.');
       }
     }));
 
@@ -172,7 +172,7 @@ const apiRoutes = {
       if (newUser) {
         sendOk(req, res, { newUser });
       } else {
-        throw createApiError(401, 'CREATE_USER_FAILED', 'Fehler beim Anlegen des neuen Users');
+        throw createApiError(401, 'USER_CREATE_FAILED', 'Fehler beim Anlegen des neuen Users');
       }
     }));
 
@@ -183,7 +183,7 @@ const apiRoutes = {
       if (result) {
         sendOk(req, res, { result });
       } else {
-        throw createApiError(401, 'UPDATE_USER_FAILED', 'Fehler beim Aendern des Users');
+        throw createApiError(401, 'USER_UPDATE_FAILED', 'Fehler beim Aendern des Users');
       }
     }));
 
@@ -194,7 +194,7 @@ const apiRoutes = {
       if (result) {
         sendOk(req, res, { result });
       } else {
-        throw createApiError(401, 'CHANGE_PASSWORD_FAILED', 'Fehler beim Aendern des Passworts');
+        throw createApiError(401, 'USER_CHANGE_PASSWORD_FAILED', 'Fehler beim Aendern des Passworts');
       }
     }));
 
@@ -205,14 +205,14 @@ const apiRoutes = {
       if (delUser) {
         sendOk(req, res, { delUser: true });
       } else {
-        throw createApiError(401, 'DELETE_USER_FAILED', 'Fehler beim Loeschen des Users');
+        throw createApiError(401, 'USER_DELETE_FAILED', 'Fehler beim Loeschen des Users');
       }
     }));
 
     // eslint-disable-next-line no-unused-vars
     app.use('/api', (error, req, res, next) => {
       const status = Number(error?.status) || 500;
-      const code = error?.code || 'INTERNAL_ERROR';
+      const code = error?.code || 'SYS_INTERNAL_ERROR';
       const message = error?.message || 'Interner Serverfehler';
       const details = error?.details || null;
       const requestId = ensureRequestId(req);

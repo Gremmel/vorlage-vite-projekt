@@ -39,7 +39,7 @@ class AuthMiddleware {
         if (decoded) {
           // Rolle des Benutzers überprüfen
           if (requiredRole && !decoded.user.roles.includes(requiredRole)) {
-            return sendError(req, res, 403, 'INSUFFICIENT_PERMISSIONS', 'Zugriff verweigert: Unzureichende Berechtigungen');
+            return sendError(req, res, 403, 'AUTH_INSUFFICIENT_PERMISSIONS', 'Zugriff verweigert: Unzureichende Berechtigungen');
           }
 
           // token verlängern
@@ -57,10 +57,10 @@ class AuthMiddleware {
           // Wenn alles passt, rufe next() auf
           next();
         } else {
-          return sendError(req, res, 401, 'SESSION_EXPIRED', 'session ist abgelaufen', { token: false });
+          return sendError(req, res, 401, 'AUTH_SESSION_EXPIRED', 'session ist abgelaufen', { token: false });
         }
       } else {
-        return sendError(req, res, 401, 'NO_SESSION', 'keine session vorhanden', { token: false });
+        return sendError(req, res, 401, 'AUTH_NO_SESSION', 'keine session vorhanden', { token: false });
       }
 
       return null;

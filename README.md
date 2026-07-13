@@ -98,3 +98,5 @@ Empfohlenes Muster in server/lib/api/apiRoutes.js:
 
 Die Auth-Middleware nutzt ebenfalls sendError, damit auch 401/403 konsistent sind.
 
+Die verbindliche Error-Code-Konvention und die aktuelle Code-Tabelle stehen in docs/error-codes.md.
+
