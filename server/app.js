@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 import logger from './lib/logger.js'; // Logger importieren
 import fs from 'fs-extra';
 import path from 'path';
+import validateConfig from './lib/config/validateConfig.js';
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -11,6 +12,13 @@ const extdir = path.join(dirname, '..', 'extern');
 
 // eslint-disable-next-line no-sync
 const config = fs.readJSONSync(path.join(extdir, 'config.json'));
+
+try {
+  validateConfig(config);
+} catch (error) {
+  logger.fatal('Ungueltige Konfiguration:', error.message);
+  process.exit(1);
+}
 
 logger.debug('init express');
 

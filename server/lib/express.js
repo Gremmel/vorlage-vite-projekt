@@ -5,12 +5,47 @@ import logger from './logger.js';
 import path from 'path';
 import cookieParser from 'cookie-parser'; // Für das Cookie-Parsing
 import cors from 'cors'; // Importiere CORS brauchen wir das wir die routen vom devserver aus aufrufen können
+import helmet from 'helmet';
 import apiRoutes from './api/apiRoutes.js';
 import authMiddleware from './middleware/authMiddleware.js';
 
 // ESM braucht __dirname-Ersatz
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
+const defaultCorsOrigins = [ 'http://localhost:5173', 'http://192.168.201.42:5173' ];
+const defaultCorsMethods = [ 'GET', 'POST' ];
+
+function getCorsOrigins (config) {
+  const origins = config?.cors?.origins;
+
+  if (!Array.isArray(origins) || origins.length === 0) {
+    return defaultCorsOrigins;
+  }
+
+  const sanitizedOrigins = origins.map((origin) => typeof origin === 'string' ? origin.trim() : '').filter(Boolean);
+
+  if (sanitizedOrigins.length === 0) {
+    return defaultCorsOrigins;
+  }
+
+  return sanitizedOrigins;
+}
+
+function getCorsMethods (config) {
+  const methods = config?.cors?.methods;
+
+  if (!Array.isArray(methods) || methods.length === 0) {
+    return defaultCorsMethods;
+  }
+
+  const sanitizedMethods = methods.map((method) => typeof method === 'string' ? method.trim().toUpperCase() : '').filter(Boolean);
+
+  if (sanitizedMethods.length === 0) {
+    return defaultCorsMethods;
+  }
+
+  return sanitizedMethods;
+}
 
 const expressApp = {
   app: express(),
@@ -20,10 +55,15 @@ const expressApp = {
   init (config) {
     authMiddleware.setSecret(config.JWT.secret);
 
+    this.app.use(helmet({
+      contentSecurityPolicy: false,
+      crossOriginEmbedderPolicy: false
+    }));
+
     // Verwende CORS für alle Routen
     this.app.use(cors({
-      origin: [ 'http://localhost:5173', 'http://192.168.201.42:5173' ],
-      methods: [ 'GET', 'POST' ],
+      origin: getCorsOrigins(config),
+      methods: getCorsMethods(config),
       credentials: true // Wenn du Cookies oder Anmeldeinformationen sendest
     }));
 

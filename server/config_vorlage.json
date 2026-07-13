@@ -2,6 +2,15 @@
   "express": {
     "port": 3000
   },
+  "cors": {
+    "origins": [
+      "http://localhost:5173"
+    ],
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
   "JWT": {
     "secret": "eigener schlüsse"
   },
@@ -9,7 +18,17 @@
     "baseUrl": "https://example.org"
   },
   "security": {
-    "passwordResetExpiresMinutes": 60
+    "passwordResetExpiresMinutes": 60,
+    "rateLimit": {
+      "login": {
+        "windowMs": 900000,
+        "max": 10
+      },
+      "passwordReset": {
+        "windowMs": 900000,
+        "max": 5
+      }
+    }
   },
   "smtp": {
     "host": "smtp.example.org",

@@ -47,3 +47,24 @@ Vorgehen:
 - smtp.pass in extern/config.json optional leer lassen.
 - Server neu starten.
 
+## Security-Basics in der Vorlage
+
+Die Server-Basis enthaelt jetzt folgende produktionsnahe Defaults:
+
+- Helmet fuer HTTP Security Header
+- Rate-Limits auf sensiblen Endpunkten:
+	- POST /api/login
+	- POST /api/requestPasswordReset
+- Start-up-Konfig-Validierung mit klaren Fehlermeldungen bei Pflichtfeldern
+
+Rate-Limits sind in server/config_vorlage.json unter security.rateLimit konfigurierbar.
+
+## CORS konfigurierbar
+
+CORS ist fuer neue Projekte ueber die Konfiguration steuerbar:
+
+- cors.origins: erlaubte Origins als Array
+- cors.methods: erlaubte HTTP-Methoden als Array (optional)
+
+Wenn cors nicht gesetzt ist, werden sichere Entwicklungs-Defaults genutzt.
+

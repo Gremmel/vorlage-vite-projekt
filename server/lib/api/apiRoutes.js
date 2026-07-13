@@ -1,15 +1,52 @@
 import logger from '../logger.js';
 import authMiddleware from '../middleware/authMiddleware.js';
+import rateLimit from 'express-rate-limit';
 import loginController from './loginController.js';
 import sessionController from './sessionController.js';
 import userController from './userController.js';
 import { buildPasswordResetUrl, sendPasswordResetMail } from './passwordResetMailer.js';
 
+function toPositiveInt (value, fallback) {
+  const number = Number(value);
+
+  if (Number.isInteger(number) && number > 0) {
+    return number;
+  }
+
+  return fallback;
+}
+
+function createLimiter (config, sectionName, defaults) {
+  const section = config?.security?.rateLimit?.[sectionName] || {};
+  const windowMs = toPositiveInt(section.windowMs, defaults.windowMs);
+  const max = toPositiveInt(section.max, defaults.max);
+
+  return rateLimit({
+    windowMs,
+    max,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+      message: defaults.message
+    }
+  });
+}
+
 const apiRoutes = {
   init (app, config) {
     sessionController.init(config);
+    const loginLimiter = createLimiter(config, 'login', {
+      windowMs: 15 * 60 * 1000,
+      max: 10,
+      message: 'Zu viele Login-Versuche. Bitte spaeter erneut versuchen.'
+    });
+    const passwordResetLimiter = createLimiter(config, 'passwordReset', {
+      windowMs: 15 * 60 * 1000,
+      max: 5,
+      message: 'Zu viele Passwort-Reset-Anfragen. Bitte spaeter erneut versuchen.'
+    });
 
-    app.post('/api/login', async (req, res) => {
+    app.post('/api/login', loginLimiter, async (req, res) => {
       const { username, password } = req.body;
       const user = await loginController.loginUser(username, password);
 
@@ -30,7 +67,7 @@ const apiRoutes = {
       }
     });
 
-    app.post('/api/requestPasswordReset', async (req, res) => {
+    app.post('/api/requestPasswordReset', passwordResetLimiter, async (req, res) => {
       try {
         const expiresMinutes = Number(config?.security?.passwordResetExpiresMinutes || 60);
         const resetRequest = await userController.createPasswordResetToken(req.body?.identifier, expiresMinutes);
